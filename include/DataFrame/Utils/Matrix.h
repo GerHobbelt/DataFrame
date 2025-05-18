@@ -95,8 +95,63 @@ public:
     reference operator() (size_type r, size_type c);
     const_reference operator() (size_type r, size_type c) const;
 
+#if !defined(_MSC_VER) || 1
     reference operator[] (size_type r, size_type c);
     const_reference operator[] (size_type r, size_type c) const;
+#else
+	// MSVC2022 (in May 2025) spits out error E0344 for the 2-operand operator[] above.
+	// (E0344: too many parameters for this `operator []` function detected during instantiation of class)
+	//
+	// In userland code this shows up as *subtle WARNINGS* such as:
+	// 
+	//   warning C4548: expression before comma has no effect; expected expression with side-effect 
+	// 
+	// which may look benign to some of you, but certainly are NOT: these are the result of MSVC silently
+	// discarding the second paramter of the operator[] functions! No compiler errors, just a few warnings
+	// and then you wonder why your code fails at run-time...
+	//
+	class MatrixColumnIndex {
+	private:
+		Matrix &ref;
+		size_type index;
+
+	public:
+		MatrixColumnIndex() = delete;
+		~MatrixColumnIndex() = default;
+
+		MatrixColumnIndex(Matrix &m, size_type r): ref(m), index(r) {}
+
+		reference operator[] (size_type c) {
+			return ref.at(index, c);
+		}
+		const_reference operator[] (size_type c) const {
+			return ref.at(index, c);
+		}
+	};
+
+	class ConstMatrixColumnIndex {
+	private:
+		const Matrix &ref;
+		size_type index;
+
+	public:
+		ConstMatrixColumnIndex() = delete;
+		~ConstMatrixColumnIndex() = default;
+
+		ConstMatrixColumnIndex(const Matrix &m, size_type r): ref(m), index(r) {}
+
+		const_reference operator[] (size_type c) const {
+			return ref.at(index, c);
+		}
+	};
+
+	MatrixColumnIndex operator[] (size_type r) {
+		return MatrixColumnIndex(*this, r);
+	};
+	ConstMatrixColumnIndex operator[] (size_type r) const {
+		return ConstMatrixColumnIndex(*this, r);
+	};
+#endif
 
     // Set the given column or row from the given iterator.
     // col_data/row_Data iterators must be valid for the length of

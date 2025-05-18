@@ -228,6 +228,8 @@ Matrix<T, MO, IS_SYM>::operator() (size_type row, size_type col) const  {
 
 // ----------------------------------------------------------------------------
 
+#if !defined(_MSC_VER) || 1
+
 template<typename T,  matrix_orient MO, bool IS_SYM>
 Matrix<T, MO, IS_SYM>::reference
 Matrix<T, MO, IS_SYM>::operator[] (size_type row, size_type col)  {
@@ -235,7 +237,11 @@ Matrix<T, MO, IS_SYM>::operator[] (size_type row, size_type col)  {
     return (at(row, col));
 }
 
+#endif
+
 // ----------------------------------------------------------------------------
+
+#if !defined(_MSC_VER) || 1
 
 template<typename T,  matrix_orient MO, bool IS_SYM>
 Matrix<T, MO, IS_SYM>::const_reference
@@ -243,6 +249,8 @@ Matrix<T, MO, IS_SYM>::operator[] (size_type row, size_type col) const  {
 
     return (at(row, col));
 }
+
+#endif
 
 // ----------------------------------------------------------------------------
 
